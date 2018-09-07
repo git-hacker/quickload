@@ -1,15 +1,15 @@
 import * as mongoose from 'mongoose';
 
 export const DriverSchema = new mongoose.Schema({
-    ID:  String,
+    id:  String,
     Name: String,
     License: Number,
+    Origin: String,
+    Destination: String,
     TruckType: {
         Length: Number,
         Weight: Number,
         Axels: Number,
-        Type: Array,
+        Type: String,
     },
-    Origin: String,
-    Destination: String,
-})
+});
