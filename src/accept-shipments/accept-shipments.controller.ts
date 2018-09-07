@@ -11,6 +11,18 @@ export class AcceptShipmentsController {
         if (!this.validateShipments(body)){
             res.status(406).send({message: 'Invalid Parameters'});
         } else {
+            await body.shipments.forEach(item => {
+                this.db.setItemAsShipped(item).then(async () => {
+                    await this.db.createNewLog(body).then(() => {
+
+                    }).catch((err) => {
+                        res.status(406).send(err);
+                    })
+                }).catch((err) => {
+                    res.status(406).send(err);
+                });
+            });
+
             res.status(200).send({message: 'Okay'});
         }
 
