@@ -2,12 +2,14 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { MongooseModule } from '@nestjs/mongoose';
-import { FindShipmentController } from './find-shipment/find-shipment.controller';
-import { AcceptShipmentController } from './accept-shipment/accept-shipment.controller';
+import { DatabaseService } from 'services/database.service';
+import { FindShipmentModule } from './find-shipment/find-shipment.module';
+import { AcceptShipmentsModule } from './accept-shipments/accept-shipments.module';
+
 
 @Module({
-  imports: [MongooseModule.forRoot('mongodb://localhost:27017/quickload')],
-  controllers: [AppController, FindShipmentController, AcceptShipmentController],
-  providers: [AppService],
+  imports: [MongooseModule.forRoot('mongodb://localhost:27017/quickload'), FindShipmentModule, AcceptShipmentsModule],
+  controllers: [AppController],
+  providers: [AppService, DatabaseService],
 })
 export class AppModule {}

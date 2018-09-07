@@ -1,9 +1,9 @@
 import * as mongoose from 'mongoose';
 
 export const ShipmentSchema = new mongoose.Schema({
-    ID: String,
+    id: String,
     ShipperName: String,
-    Price: String,
+    Price: Number,
     Origin: String,
     Destination: String,
     RequiredTruckInformation: {
@@ -14,7 +14,6 @@ export const ShipmentSchema = new mongoose.Schema({
     },
     CargoInformation: {
         TypeName: Array,
-        TypesNotMixable: Array,
     },
     Shipped: Boolean,
-})
+});

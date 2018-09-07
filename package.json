@@ -23,6 +23,7 @@
     "@nestjs/common": "^5.1.0",
     "@nestjs/core": "^5.1.0",
     "@nestjs/mongoose": "^5.2.1",
+    "@types/lodash": "^4.14.116",
     "@types/mongoose": "^5.2.11",
     "mongoose": "^5.2.13",
     "reflect-metadata": "^0.1.12",
