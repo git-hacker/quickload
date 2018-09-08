@@ -1,10 +1,14 @@
+import { CalculateShipmentsService } from 'services/calculate-shipments.service';
 import { Drivers } from './../interfaces/drivers';
 import { DatabaseService } from 'services/database.service';
 import { Controller, Res, Post, Body } from '@nestjs/common';
 
 @Controller('find-shipment')
 export class FindShipmentController {
-  constructor(private db: DatabaseService) {}
+  constructor(
+    private db: DatabaseService,
+    private calculate: CalculateShipmentsService,
+    ) {}
 
   @Post()
   async getShipments(@Body() body, @Res() res) {
@@ -13,8 +17,12 @@ export class FindShipmentController {
     } else {
       await this.db
         .findAllShipments()
-        .then(response => {
-          res.status(202).send(response);
+        .then(async response => {
+          await this.calculate.matchDriver(response, body).then((xx) => {
+            res.status(202).send(xx);
+          }).catch((err) => {
+            res.status(204).send({message: 'Error with calculations: ' + err});
+          });
         })
         .catch(err => {
           res.status(204).send(err);

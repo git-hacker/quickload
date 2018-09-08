@@ -1,3 +1,4 @@
+import { CalculateShipmentsService } from 'services/calculate-shipments.service';
 import { DatabaseService } from 'services/database.service';
 import { ShipmentSchema } from './../schemas/shipment-schema/shipment-schema';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -13,6 +14,6 @@ import { ShipmentLogSchema } from 'schemas/shipment-log/shipment-log-schema';
       { name: 'ShipmentLog', schema: ShipmentLogSchema}]),
   ],
   controllers: [FindShipmentController],
-  providers: [DatabaseService],
+  providers: [DatabaseService, CalculateShipmentsService],
 })
 export class FindShipmentModule {}
