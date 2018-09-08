@@ -75,14 +75,13 @@ export class CalculateShipmentsService {
         return params.RequiredTruckInformation.Full === true;
       });
 
-      shipments = ld.difference(shipments, FinalSortedArray)
+      shipments = ld.difference(shipments, FinalSortedArray);
 
       // if destination is selected
       if (driver.Destination) {
         // otherwise run compatibility algo
-
+        CompatibilityAlgo();
       } else {
-
         // sort shipments with same origin and destination into an array
         let destinations = [];
 
@@ -94,7 +93,7 @@ export class CalculateShipmentsService {
         destinations = ld.uniq(destinations);
 
         // loop through destinations and check against shipments then sort into new array
-        destinations.forEach((d) => {
+        destinations.forEach(d => {
           const x = shipments.filter(s => {
             return s.Destination === d;
           });
@@ -102,15 +101,121 @@ export class CalculateShipmentsService {
         });
 
         // otherwise run compatibility algo
-
+        CompatibilityAlgo();
       }
 
       // CompatibilityAlgo
-      function CompatibilityAlgo() {}
+      async function CompatibilityAlgo() {
+
+        const tempStorageOfArray = [];
+
+        await FinalSortedArray.forEach(async shipment => {
+          if (shipment.length > 1) {
+            await tempStorageOfArray.push(shipment);
+            await FinalSortedArray.splice(FinalSortedArray.indexOf(shipment));
+          }
+        });
+
+        await tempStorageOfArray.forEach(async ships => {
+            await ships.forEach(async s => {
+              let a = [];
+              a = await ships.filter((el) => {
+                return CheckMixability(s.CargoInformation.TypeName[0], el.CargoInformation.TypeName[0]);
+              });
+
+              if (a.length === 1) {
+                FinalSortedArray.push(a[0]);
+              } else {
+                FinalSortedArray.push(a);
+              }
+            });
+        });
+
+        FinalSortedArray = await ld.uniq(FinalSortedArray);
+      }
 
       // SortMixability
-      function SortMixability() {
+      function CheckMixability(x, y) {
         // if x then proceed to switch
+        switch (x) {
+          case 'Regular':
+            switch (y) {
+              case 'Regular':
+                return true;
+              case 'Heavy':
+                return true;
+              case 'Construction':
+                return true;
+              case 'Chemicals':
+                return false;
+              case 'Food':
+                return false;
+              default:
+                return false;
+            }
+          case 'Heavy':
+            switch (y) {
+              case 'Regular':
+                return true;
+              case 'Heavy':
+                return true;
+              case 'Construction':
+                return true;
+              case 'Chemicals':
+                return false;
+              case 'Food':
+                return false;
+              default:
+                return false;
+            }
+          case 'Construction':
+            switch (y) {
+              case 'Regular':
+                return true;
+              case 'Heavy':
+                return true;
+              case 'Construction':
+                return true;
+              case 'Chemicals':
+                return false;
+              case 'Food':
+                return false;
+              default:
+                return false;
+            }
+          case 'Chemicals':
+            switch (y) {
+              case 'Regular':
+                return false;
+              case 'Heavy':
+                return false;
+              case 'Construction':
+                return false;
+              case 'Chemicals':
+                return true;
+              case 'Food':
+                return false;
+              default:
+                return false;
+            }
+          case 'Food':
+            switch (y) {
+              case 'Regular':
+                return false;
+              case 'Heavy':
+                return false;
+              case 'Construction':
+                return false;
+              case 'Chemicals':
+                return false;
+              case 'Food':
+                return true;
+              default:
+                return false;
+            }
+          default:
+            return false;
+        }
       }
 
       // SortCombination
