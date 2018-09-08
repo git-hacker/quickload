@@ -18,8 +18,14 @@ export class FindShipmentController {
       await this.db
         .findAllShipments()
         .then(async response => {
-          await this.calculate.matchDriver(response, body).then((xx) => {
-            res.status(202).send(xx);
+          await this.calculate.matchDriver(response, body).then(async (sortedShipments) => {
+
+            await this.calculate.findCombinations(sortedShipments, body).then((finalResponse) => {
+              res.status(202).send(finalResponse);
+            }).catch((err) => {
+              res.status(204).send({message: 'Error with calculations: ' + err});
+            });
+
           }).catch((err) => {
             res.status(204).send({message: 'Error with calculations: ' + err});
           });
@@ -31,13 +37,11 @@ export class FindShipmentController {
   }
 
   validateDriverInformation(driver: Drivers) {
-    if (typeof driver.id !== 'string') return false;
     if (typeof driver.Name !== 'string') return false;
     if (typeof driver.License !== 'number') return false;
     if (typeof driver.Origin !== 'string') return false;
     if (typeof driver.TruckType.Length !== 'number') return false;
     if (typeof driver.TruckType.Weight !== 'number') return false;
-    if (typeof driver.TruckType.Axels !== 'number') return false;
     if (typeof driver.TruckType.Type !== 'string') return false;
     return true;
   }
