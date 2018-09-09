@@ -17,7 +17,8 @@ export class DatabaseService {
   }
 
   async setItemAsShipped(itemID): Promise<any>{
-    return await this.shipmentsmodel.findOneAndUpdate({id: itemID}, {Shipped: true}, (err, doc) => {
+
+    return await this.shipmentsmodel.findByIdAndUpdate(itemID, {Shipped: true}, (err, doc) => {
       return err ? err : doc;
     });
   }

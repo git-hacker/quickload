@@ -6,8 +6,8 @@ import * as ld from 'lodash';
 export class CalculateShipmentsService {
   constructor() {}
 
-  async matchDriver(shipments, driver: Drivers) {
-    return await new Promise((resolve, reject) => {
+   matchDriver(shipments, driver: Drivers) {
+    return new Promise((resolve, reject) => {
       let x = [];
 
       // check if origin is same
@@ -65,8 +65,8 @@ export class CalculateShipmentsService {
     });
   }
 
-  async findCombinations(shipments, driver: Drivers) {
-    return await new Promise((resolve, reject) => {
+  findCombinations(shipments, driver: Drivers) {
+    return new Promise(async (resolve, reject) => {
       // create FinalSortedArray
       let FinalSortedArray = [];
 
@@ -77,10 +77,19 @@ export class CalculateShipmentsService {
 
       shipments = ld.difference(shipments, FinalSortedArray);
 
+      const tempObjArray = [];
+      FinalSortedArray.forEach((object) => {
+        tempObjArray.push([object]);
+      });
+
+      FinalSortedArray = tempObjArray;
+
       // if destination is selected
       if (driver.Destination) {
         // otherwise run compatibility algo
-        CompatibilityAlgo();
+        await CompatibilityAlgo();
+        await SortCombination();
+        await resolve(checkCopies(FinalSortedArray));
       } else {
         // sort shipments with same origin and destination into an array
         let destinations = [];
@@ -99,39 +108,137 @@ export class CalculateShipmentsService {
           });
           FinalSortedArray.push(x);
         });
-
         // otherwise run compatibility algo
-        CompatibilityAlgo();
+        await CompatibilityAlgo();
+        await SortCombination();
+        await resolve(checkCopies(FinalSortedArray));
+        // resolve(FinalSortedArray);
       }
 
       // CompatibilityAlgo
       async function CompatibilityAlgo() {
+        await SeparateCombinationsOut().then(async params => {
+          await params.forEach(async ships => {
 
-        const tempStorageOfArray = [];
-
-        await FinalSortedArray.forEach(async shipment => {
-          if (shipment.length > 1) {
-            await tempStorageOfArray.push(shipment);
-            await FinalSortedArray.splice(FinalSortedArray.indexOf(shipment));
-          }
-        });
-
-        await tempStorageOfArray.forEach(async ships => {
             await ships.forEach(async s => {
               let a = [];
-              a = await ships.filter((el) => {
-                return CheckMixability(s.CargoInformation.TypeName[0], el.CargoInformation.TypeName[0]);
+              a = await ships.filter(el => {
+                return CheckMixability(
+                  s.CargoInformation.TypeName[0],
+                  el.CargoInformation.TypeName[0],
+                );
               });
-
-              if (a.length === 1) {
-                FinalSortedArray.push(a[0]);
-              } else {
-                FinalSortedArray.push(a);
-              }
+              FinalSortedArray.push(a);
             });
+          });
         });
 
         FinalSortedArray = await ld.uniq(FinalSortedArray);
+      }
+
+      // seperate out combination arrays
+      async function SeparateCombinationsOut() {
+        const temp = [];
+        await FinalSortedArray.forEach(async shipment => {
+          if (shipment.length > 1) {
+            await temp.push(shipment);
+          }
+        });
+        FinalSortedArray = ld.difference(FinalSortedArray, temp);
+        return temp;
+      }
+
+      // SortCombination
+      async function SortCombination() {
+        await SeparateCombinationsOut().then(async params => {
+          let deleteArray = [];
+          await params.forEach(async levelOne => {
+            for (let i = 3; i > 0; i--) {
+
+              let combs = k_combinations(levelOne, i);
+
+              if (deleteArray.length !== 0) {
+                deleteArray = await ld.uniq(deleteArray);
+                combs = ld.difference(combs, deleteArray);
+              }
+
+              await combs.forEach(async a => {
+                let totalWeight = 0,
+                  totalLength = 0;
+
+                await a.forEach(shipment => {
+                  totalWeight += shipment.RequiredTruckInformation.Weight;
+                  totalLength += shipment.RequiredTruckInformation.Length;
+                });
+
+                if (
+                  totalLength <= driver.TruckType.Length &&
+                  totalWeight <= driver.TruckType.Weight
+                ) {
+                  FinalSortedArray.push(a);
+                  deleteArray = k_combinations(a, i - 1);
+                }
+              });
+            }
+
+            params = await ld.uniq(params);
+          });
+
+          FinalSortedArray = await ld.uniq(FinalSortedArray);
+        });
+      }
+
+      function k_combinations(set, k) {
+        let i, j, combs, head, tailcombs;
+
+        // There is no way to take e.g. sets of 5 elements from
+        // a set of 4.
+        if (k > set.length || k <= 0) {
+          return [];
+        }
+
+        // K-sized set has only one K-sized subset.
+        if (k === set.length) {
+          return [set];
+        }
+
+        // There is N 1-sized subsets in a N-sized set.
+        if (k === 1) {
+          combs = [];
+          for (i = 0; i < set.length; i++) {
+            combs.push([set[i]]);
+          }
+          return combs;
+        }
+
+        combs = [];
+        for (i = 0; i < set.length - k + 1; i++) {
+          // head is a list that includes only our current element.
+          head = set.slice(i, i + 1);
+          // We take smaller combinations from the subsequent elements
+          tailcombs = k_combinations(set.slice(i + 1), k - 1);
+          // For each (k-1)-combination we join it with the current
+          // and store it to the set of k-combinations.
+          for (j = 0; j < tailcombs.length; j++) {
+            combs.push(head.concat(tailcombs[j]));
+          }
+        }
+        return combs;
+      }
+
+      async function checkCopies(array) {
+        for (let i = 0; i < array.length - 1; i++) {
+          if (array[i].length === array[i + 1].length) {
+            if (array[i][0].ShipperName === array[i + 1][0].ShipperName) {
+              if (array[i][1].ShipperName === array[i + 1].ShipperName) {
+                if (array[i][2].ShipperName === array[i + 1][2].ShipperName) {
+                  array = ld.pullAt(array, array[i++]);
+                }
+              }
+            }
+          }
+        }
+        return array;
       }
 
       // SortMixability
@@ -217,15 +324,6 @@ export class CalculateShipmentsService {
             return false;
         }
       }
-
-      // SortCombination
-      function SortCombination() {
-        // run k_combination function
-        // check length
-        // check weight
-      }
-
-      resolve(FinalSortedArray);
     });
   }
 }

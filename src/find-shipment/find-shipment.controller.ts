@@ -20,8 +20,10 @@ export class FindShipmentController {
         .then(async response => {
           await this.calculate.matchDriver(response, body).then(async (sortedShipments) => {
 
+            // res.status(202).send({shipments: sortedShipments});
+
             await this.calculate.findCombinations(sortedShipments, body).then((finalResponse) => {
-              res.status(202).send(finalResponse);
+              res.status(202).send({shipments: finalResponse});
             }).catch((err) => {
               res.status(204).send({message: 'Error with calculations: ' + err});
             });
@@ -38,7 +40,7 @@ export class FindShipmentController {
 
   validateDriverInformation(driver: Drivers) {
     if (typeof driver.Name !== 'string') return false;
-    if (typeof driver.License !== 'number') return false;
+    if (typeof driver.License !== 'string') return false;
     if (typeof driver.Origin !== 'string') return false;
     if (typeof driver.TruckType.Length !== 'number') return false;
     if (typeof driver.TruckType.Weight !== 'number') return false;

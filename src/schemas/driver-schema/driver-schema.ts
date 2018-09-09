@@ -3,7 +3,7 @@ import * as mongoose from 'mongoose';
 export const DriverSchema = new mongoose.Schema({
     id:  String,
     Name: String,
-    License: Number,
+    License: String,
     Origin: String,
     Destination: String,
     TruckType: {
