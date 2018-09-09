@@ -20,8 +20,6 @@ export class FindShipmentController {
         .then(async response => {
           await this.calculate.matchDriver(response, body).then(async (sortedShipments) => {
 
-            // res.status(202).send({shipments: sortedShipments});
-
             await this.calculate.findCombinations(sortedShipments, body).then((finalResponse) => {
               res.status(202).send({shipments: finalResponse});
             }).catch((err) => {

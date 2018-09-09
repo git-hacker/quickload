@@ -4,7 +4,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Shipments } from 'interfaces/shipments';
 import { ShipmentLog } from 'interfaces/shipmentLog';
-
+import * as ld from 'lodash';
 @Injectable()
 export class DatabaseService {
   constructor(
@@ -13,7 +13,14 @@ export class DatabaseService {
   ) {}
 
   async findAllShipments(): Promise<any> {
-    return await this.shipmentsmodel.find().exec();
+    const shipments = await this.shipmentsmodel.find().exec();
+    await shipments.forEach(async (element, key) => {
+      if (element.Shipped === true) {
+        ld.pullAt(shipments, key);
+      }
+    });
+
+    return shipments;
   }
 
   async setItemAsShipped(itemID): Promise<any>{
