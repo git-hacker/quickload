@@ -89,7 +89,7 @@ export class CalculateShipmentsService {
         // otherwise run compatibility algo
         await CompatibilityAlgo();
         await SortCombination();
-        await resolve(checkCopies(FinalSortedArray));
+        await resolve(checkComboCopies(FinalSortedArray));
       } else {
         // sort shipments with same origin and destination into an array
         let destinations = [];
@@ -111,7 +111,7 @@ export class CalculateShipmentsService {
         // otherwise run compatibility algo
         await CompatibilityAlgo();
         await SortCombination();
-        await resolve(checkCopies(FinalSortedArray));
+        await resolve(checkComboCopies(FinalSortedArray));
         // resolve(FinalSortedArray);
       }
 
@@ -226,7 +226,7 @@ export class CalculateShipmentsService {
         return combs;
       }
 
-      async function checkCopies(array) {
+      async function checkComboCopies(array) {
         for (let i = 0; i < array.length - 1; i++) {
           if (array[i].length === array[i + 1].length) {
             if (array[i][0].ShipperName === array[i + 1][0].ShipperName) {
