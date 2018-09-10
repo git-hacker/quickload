@@ -32,9 +32,20 @@
 
 ```bash
 $ npm install
+$ npm install lodash
+```
+
+You'll need to install version 4.0.1 of MongoDB
+After you've installed both open your terminal and type 'mongod'. If you get an error make sure you have a folder /data/db with 777 privileges.
+After this then open a new terminal and navigate to the root of this project where "shipments.json" is located.
+Then you'll need to run this command
+```
+mongoimport --db quickload --collection shipments --type json --jsonArray --file shipments.json
 ```
 
 ## Running the app
+
+Make sure to have Mongodb running before starting this server using the command 'mongod'
 
 ```bash
 # development
