@@ -7,7 +7,6 @@ import { FindShipmentModule } from './find-shipment/find-shipment.module';
 import { AcceptShipmentsModule } from './accept-shipments/accept-shipments.module';
 import { CalculateShipmentsService } from 'services/calculate-shipments.service';
 
-
 @Module({
   imports: [MongooseModule.forRoot('mongodb://localhost:27017/quickload'), FindShipmentModule, AcceptShipmentsModule],
   controllers: [AppController],

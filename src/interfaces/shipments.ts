@@ -1,4 +1,5 @@
-export class Shipments {
+import { Document } from 'mongoose';
+export interface Shipments extends Document {
     public readonly id: string;
     public readonly ShipperName: string;
     public readonly Price: number;
